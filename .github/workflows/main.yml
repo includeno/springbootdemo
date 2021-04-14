@@ -5,7 +5,7 @@ name: SpringBootDemo
 on: # push operation is operate
   push:
     # here since my repository branch is named `main` , you should follow your own repository like `master`
-    branches: [main]
+    branches: [with_action_slack_notification]
 # CI enviroment settings
 env:
   STATE_RELEASE_VERSION: "1.0" # version
@@ -47,5 +47,13 @@ jobs:
       - name: The job has succeeded
         if: ${{ success() }}
         run: echo "success"
-    
+      #https://github.com/8398a7/action-slack
+      - name: Slack Nofitication
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        if: always() # Pick up events even if the job fails or is canceled.
    
