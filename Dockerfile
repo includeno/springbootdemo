@@ -4,7 +4,7 @@ EXPOSE 8080
 WORKDIR /app
 
 #add jar file
-ADD springbootdemo-0.0.1.jar /app/application.jar
+ADD target/springbootdemo-0.0.1.jar /app/application.jar
 
 #指定容器启动程序及参数   <ENTRYPOINT> "<CMD>"
 #default port of tomcat is 8080
