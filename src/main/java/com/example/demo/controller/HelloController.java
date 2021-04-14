@@ -9,6 +9,6 @@ public class HelloController {
 
     @GetMapping("/hello")
     String hello(){
-        return "hello "+DateUtil.today().toString();
+        return "hello "+DateUtil.now().toString();
     }
 }
