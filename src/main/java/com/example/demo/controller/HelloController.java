@@ -11,4 +11,9 @@ public class HelloController {
     String hello(){
         return "hello "+DateUtil.now().toString();
     }
+
+    @GetMapping("/input")
+    String input(String name){
+        return "hello "+name+" "+DateUtil.now().toString();
+    }
 }

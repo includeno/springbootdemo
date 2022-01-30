@@ -1,6 +1,6 @@
 # https://docs.github.com/en/actions/guides
 # CI name , it will display on github's action page menu
-name: SpringBootDemo
+name: Build SpringBootDemo
 # trigger on which this CI should be run
 on: # push operation is operate
   push:
@@ -8,12 +8,12 @@ on: # push operation is operate
     branches: [main]
 # CI enviroment settings
 env:
-  STATE_RELEASE_VERSION: "1.0" # version
+  STATE_RELEASE_VERSION: "1.0.0" # version
   TAG_NAME: "springbootdemo" #tag 只能小写开头
   java-version: "11"
 jobs:
   build:
-    name: 构建,发布
+    name: DockerImage
     runs-on: ubuntu-latest # use latest ubuntu to run the job
     steps:
       - uses: actions/checkout@v2
@@ -22,15 +22,21 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ env.java-version }}
+      #构建应用程序
       - name: Build with Maven
         run:
-           mvn clean package -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      - name: show files
-        run: ls -a
-      - name: Output Docker info
-        run: docker info
+          mvn clean package -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+      #设置部分灵活的环境变量
       - name: Sets build date
         run: echo "BUILD_DATE=$(date '+%Y%m%d')" >> $GITHUB_ENV
+      #安装docker模拟器 多平台镜像专用
+      - name: Installing docker emulators
+        run:
+          docker run --privileged --rm tonistiigi/binfmt --install all
+      #设置docker模拟器
+      - name: docker buildx
+        run:
+          docker buildx create --use --name mybuilder
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -42,7 +48,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          tags: "includeno/${{ env.TAG_NAME }}:latest,includeno/${{ env.TAG_NAME }}:${{ env.STATE_RELEASE_VERSION }}-${{ env.BUILD_DATE }}"
+          tags: "${{ secrets.DOCKER_USERNAME }}/${{ env.TAG_NAME }}:latest,${{ secrets.DOCKER_USERNAME }}/${{ env.TAG_NAME }}:${{ env.STATE_RELEASE_VERSION }}"
           push: true
       - name: The job has succeeded
         if: ${{ success() }}
